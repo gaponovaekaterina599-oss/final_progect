@@ -1,2 +1,2 @@
-hello word
+print("hello word")
 gigigrik
