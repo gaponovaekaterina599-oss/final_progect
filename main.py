@@ -9,7 +9,7 @@ def index():
     if request.method == "GET":
         return render_template("index.html")
     else:
-        print("LOL")
+        print(request.form.get('user_input'))
 
 
 if __name__ == "__main__":
