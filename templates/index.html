@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Dark Notes | Серые заметки с голубым акцентом</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #1a1e24;  /* глубокий темно-серый фон */
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            min-height: 100vh;
+            padding: 2rem 1.5rem;
+            color: #eef2ff;
+        }
+
+        /* контейнер с мягкой тенью и акцентами */
+        .app-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #1f242c;  /* темно-серый каркас */
+            border-radius: 2rem;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(59, 130, 246, 0.15);
+            overflow: hidden;
+            backdrop-filter: blur(0px);
+            transition: all 0.2s ease;
+        }
+
+        /* шапка с голубым акцентом */
+        .header {
+            background: #11161f;
+            padding: 1.5rem 2rem;
+            border-bottom: 2px solid #2c6e9e;
+            border-image: none;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 1.9rem;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            background: linear-gradient(135deg, #c0e0ff, #5aa9dd);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            display: inline-block;
+            margin-bottom: 0.25rem;
+        }
+
+        .header .sub {
+            font-size: 0.85rem;
+            color: #8b9bb0;
+            margin-top: 0.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header .sub:before {
+            content: "✦";
+            color: #3b82f6;
+            font-size: 0.9rem;
+        }
+
+        /* форма ввода — темная, но с голубым свечением */
+        .form-section {
+            padding: 1.8rem 2rem 1.2rem 2rem;
+            background: #1b2028;
+        }
+
+        .input-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            align-items: flex-start;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .note-input {
+            width: 100%;
+            background: #0f1219;
+            border: 1px solid #2d3748;
+            border-radius: 1.2rem;
+            padding: 0.9rem 1.2rem;
+            font-size: 1rem;
+            font-family: inherit;
+            color: #f0f4fa;
+            transition: all 0.2s;
+            resize: vertical;
+            outline: none;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .note-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.3), 0 1px 2px rgba(0,0,0,0.2);
+            background: #0b0f16;
+        }
+
+        .note-input::placeholder {
+            color: #5c6b82;
+            font-weight: 400;
+        }
+
+        .submit-btn {
+            background: #1e2a3a;
+            border: 1px solid #2c5f8a;
+            padding: 0.9rem 1.8rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #bbd9ff;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: inherit;
+            backdrop-filter: blur(2px);
+        }
+
+        .submit-btn:hover {
+            background: #2a3a4e;
+            border-color: #3b82f6;
+            color: white;
+            box-shadow: 0 4px 12px rgba(59,130,246,0.2);
+            transform: translateY(-1px);
+        }
+
+        .submit-btn:active {
+            transform: translateY(1px);
+        }
+
+        /* секция заметок – сетка */
+        .notes-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 1rem 2rem 0.2rem 2rem;
+            flex-wrap: wrap;
+        }
+
+        .notes-header h2 {
+            font-size: 1.35rem;
+            font-weight: 500;
+            letter-spacing: -0.2px;
+            color: #cbdff5;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .notes-header h2:before {
+            content: "📓";
+            font-size: 1.3rem;
+            filter: drop-shadow(0 1px 1px rgba(0,0,0,0.3));
+        }
+
+        .clear-all-btn {
+            background: none;
+            border: 1px solid #3c4a5c;
+            color: #a0b5d0;
+            padding: 0.4rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .clear-all-btn:hover {
+            background: #2f3b48;
+            border-color: #5f7f9e;
+            color: #f0f4ff;
+        }
+
+        /* список заметок */
+        .notes-list {
+            padding: 1rem 2rem 2rem 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        /* карточка заметки – темно-серая, голубые детали */
+        .note-card {
+            background: #171c24;
+            border-radius: 1.2rem;
+            padding: 1.2rem 1.5rem;
+            transition: all 0.2s;
+            border-left: 4px solid #2c6e9e;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            word-break: break-word;
+        }
+
+        .note-card:hover {
+            background: #1b212b;
+            border-left-color: #3b82f6;
+            transform: translateX(2px);
+            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .note-content {
+            flex: 1;
+            font-size: 1rem;
+            line-height: 1.45;
+            color: #e2e8f2;
+            white-space: pre-wrap;
+            font-weight: 400;
+        }
+
+        .note-meta {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.5rem;
+            flex-shrink: 0;
+        }
+
+        .note-date {
+            font-size: 0.65rem;
+            color: #6c819e;
+            background: #0e121a;
+            padding: 0.2rem 0.6rem;
+            border-radius: 1rem;
+            letter-spacing: 0.2px;
+        }
+
+        .delete-btn {
+            background: #262e39;
+            border: none;
+            color: #b4c6e0;
+            font-size: 0.7rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: 500;
+        }
+
+        .delete-btn:hover {
+            background: #ae3e4b;
+            color: white;
+            border-color: #ff6b7c;
+        }
+
+        .empty-notes {
+            text-align: center;
+            padding: 2.5rem 1rem;
+            background: #141a22;
+            border-radius: 1.5rem;
+            color: #7689a8;
+            font-size: 0.9rem;
+            border: 1px dashed #2f4055;
+        }
+
+        .empty-notes span {
+            display: block;
+            margin-top: 0.5rem;
+            font-size: 2rem;
+            opacity: 0.6;
+        }
+
+        /* небольшая адаптивность */
+        @media (max-width: 580px) {
+            body {
+                padding: 1rem;
+            }
+            .form-section, .notes-list, .header {
+                padding-left: 1.2rem;
+                padding-right: 1.2rem;
+            }
+            .note-card {
+                flex-direction: column;
+            }
+            .note-meta {
+                flex-direction: row;
+                justify-content: space-between;
+                width: 100%;
+                align-items: center;
+            }
+            .submit-btn {
+                width: 100%;
+                justify-content: center;
+            }
+            .input-group {
+                flex-direction: column;
+            }
+        }
+
+        /* скроллбар в стиле темной темы */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a1f28;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2c5f8a;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header">
+        <h1>✧ Серые заметки ✧</h1>
+        <div class="sub">темно-серый фон • голубые акценты • твои мысли</div>
+    </div>
+
+    <div class="form-section">
+        <form method="post" id="noteForm">
+            <div class="input-group">
+                <div class="input-wrapper">
+                    <input type="text" name="user_input" class="note-input" placeholder="Напишите заметку, идею или напоминание..." required autocomplete="off">
+                </div>
+                <button type="submit" class="submit-btn">
+                    <span>✎</span> Добавить заметку
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="notes-header">
+        <h2>Ваши записи</h2>
+        <button id="clearAllNotes" class="clear-all-btn">🗑 Очистить всё</button>
+    </div>
+
+    <div id="notesContainer" class="notes-list">
+        <!-- динамические заметки будут тут -->
+        <div class="empty-notes">
+            Здесь пока пусто...<br>Напишите что-нибудь в поле выше ✨
+            <span>📝</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // -------- КЛЮЧ ДЛЯ ХРАНЕНИЯ В localStorage --------
+        const STORAGE_KEY = 'gray_blue_notes_app';
+
+        // Структура заметки: { id, text, timestamp, dateStr }
+        let notes = [];
+
+        // ---------- загрузка из localStorage ----------
+        function loadNotesFromStorage() {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                try {
+                    const parsed = JSON.parse(stored);
+                    if (Array.isArray(parsed)) {
+                        notes = parsed;
+                        return;
+                    }
+                } catch(e) { console.warn(e); }
+            }
+            // данные по умолчанию — пара примеров, чтобы не было пусто, но можно и пустой массив
+            // но пусть будут демо-заметки для атмосферы (стиль)
+            if (notes.length === 0) {
+                notes = [
+                    {
+                        id: Date.now() + 1,
+                        text: "💡 Идея: добавить голубые акценты в интерфейс",
+                        timestamp: Date.now() - 86400000,
+                        dateStr: new Date(Date.now() - 86400000).toLocaleString()
+                    },
+                    {
+                        id: Date.now() + 2,
+                        text: "🎨 Темно-серый фон + карточки с левой голубой полосой смотрятся стильно",
+                        timestamp: Date.now() - 43200000,
+                        dateStr: new Date(Date.now() - 43200000).toLocaleString()
+                    }
+                ];
+                saveNotesToStorage();
+            }
+        }
+
+        // сохранение в localStorage
+        function saveNotesToStorage() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+        }
+
+        // форматирование даты для каждой заметки (при создании обновляем)
+        function getFormattedDate() {
+            const now = new Date();
+            return now.toLocaleString(undefined, {
+                day: 'numeric', month: 'short', hour: '2-digit', minute:'2-digit'
+            });
+        }
+
+        // добавить новую заметку (текст)
+        function addNote(text) {
+            if (!text || text.trim() === '') return false;
+            const trimmedText = text.trim();
+            const newNote = {
+                id: Date.now() + Math.floor(Math.random() * 10000),
+                text: trimmedText,
+                timestamp: Date.now(),
+                dateStr: getFormattedDate()
+            };
+            notes.unshift(newNote); // новые сверху
+            saveNotesToStorage();
+            renderNotes();
+            return true;
+        }
+
+        // удалить заметку по id
+        function deleteNoteById(id) {
+            notes = notes.filter(note => note.id !== id);
+            saveNotesToStorage();
+            renderNotes();
+        }
+
+        // удалить все заметки
+        function clearAllNotes() {
+            if (notes.length === 0) return;
+            if (confirm("Удалить все заметки? Действие нельзя отменить.")) {
+                notes = [];
+                saveNotesToStorage();
+                renderNotes();
+            }
+        }
+
+        // рендер всех заметок в DOM
+        function renderNotes() {
+            const container = document.getElementById('notesContainer');
+            if (!container) return;
+
+            if (notes.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-notes">
+                        Нет ни одной заметки 🌙<br>Напишите что-то, чтобы сохранить идею
+                        <span>✍️</span>
+                    </div>
+                `;
+                return;
+            }
+
+            // формируем карточки
+            let html = '';
+            for (let i = 0; i < notes.length; i++) {
+                const note = notes[i];
+                // экранируем текст, чтобы избежать XSS (простая защита)
+                const safeText = escapeHtml(note.text);
+                html += `
+                    <div class="note-card" data-id="${note.id}">
+                        <div class="note-content">${safeText}</div>
+                        <div class="note-meta">
+                            <div class="note-date">${escapeHtml(note.dateStr)}</div>
+                            <button class="delete-btn" data-id="${note.id}">Удалить</button>
+                        </div>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+
+            // навешиваем обработчики на кнопки удаления (динамически)
+            const deleteBtns = container.querySelectorAll('.delete-btn');
+            deleteBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const idAttr = btn.getAttribute('data-id');
+                    if (idAttr) {
+                        const idNum = parseInt(idAttr, 10);
+                        if (!isNaN(idNum)) {
+                            deleteNoteById(idNum);
+                        }
+                    }
+                });
+            });
+        }
+
+        // простая функция для защиты от вставки HTML
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;')
+                .replace(/`/g, '&#96;')
+                .replace(/\n/g, '<br>');
+        }
+
+        // обработка отправки формы (POST)
+        function handleFormSubmit(event) {
+            event.preventDefault();
+            const inputField = document.querySelector('input[name="user_input"]');
+            if (inputField) {
+                const rawValue = inputField.value;
+                if (rawValue.trim() !== '') {
+                    addNote(rawValue);
+                    inputField.value = '';   // очищаем поле после добавления
+                    inputField.focus();
+                } else {
+                    // легкий фидбек, но можно игнорировать
+                    inputField.style.borderColor = '#f87171';
+                    setTimeout(() => {
+                        inputField.style.borderColor = '#2d3748';
+                    }, 1000);
+                }
+            }
+        }
+
+        // инициализация и подписка на события
+        function init() {
+            loadNotesFromStorage();
+            renderNotes();
+
+            const form = document.getElementById('noteForm');
+            if (form) {
+                form.addEventListener('submit', handleFormSubmit);
+            }
+
+            const clearBtn = document.getElementById('clearAllNotes');
+            if (clearBtn) {
+                clearBtn.addEventListener('click', clearAllNotes);
+            }
+        }
+
+        // запускаем приложение после полной загрузки DOM
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    })();
+</script>
+</body>
+</html>
