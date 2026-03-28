@@ -14,7 +14,8 @@ def index():
         return render_template("index.html")
     else:
         print('post')
-        print(request.form.get('user_input'),user.append())
+        user.append(request.form.get('user_input'))
+        print(user)
         return render_template("index.html")
 
 if __name__ == "__main__":
