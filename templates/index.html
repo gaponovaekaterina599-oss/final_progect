@@ -3,23 +3,614 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Заметки</title>
+    <title>Список задач | TODO</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    <link rel="stylesheet" href="static/style.css">
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
 
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
 
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #888;
+            margin-bottom: 30px;
+            font-size: 14px;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        input {
+            flex: 1;
+            padding: 15px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            outline: none;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-family: inherit;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        /* Стили для списка задач */
+        .tasks-section {
+            margin-top: 20px;
+            text-align: left;
+            border-top: 2px solid #f0f0f0;
+            padding-top: 25px;
+        }
+
+        .tasks-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .tasks-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .task-count {
+            background: #f0f0f0;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .task-list {
+            list-style: none;
+            margin-bottom: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            background: #fafafa;
+            margin-bottom: 10px;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            border: 1px solid #eee;
+        }
+
+        .task-item:hover {
+            background: #f5f5ff;
+            border-color: #667eea;
+            transform: translateX(3px);
+        }
+
+        /* Стиль для выполненной задачи */
+        .task-item.completed {
+            opacity: 0.7;
+            background: #f9f9f9;
+        }
+
+        .task-item.completed .task-text {
+            text-decoration: line-through;
+            color: #999;
+        }
+
+        /* Нумерация задачи в формате "1 - текст" */
+        .task-number {
+            font-weight: 700;
+            color: #667eea;
+            min-width: 45px;
+            font-size: 16px;
+        }
+
+        .task-text {
+            flex: 1;
+            font-size: 16px;
+            color: #333;
+            word-break: break-word;
+            padding: 0 10px;
+        }
+
+        /* Кастомный чекбокс */
+        .task-checkbox {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            accent-color: #667eea;
+            margin-right: 5px;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #ccc;
+            padding: 5px 8px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            margin-left: 5px;
+        }
+
+        .delete-btn:hover {
+            background: #fee;
+            color: #e74c3c;
+            transform: scale(1.05);
+            box-shadow: none;
+        }
+
+        .empty-tasks {
+            text-align: center;
+            padding: 40px 20px;
+            color: #aaa;
+            font-size: 14px;
+            background: #fafafa;
+            border-radius: 12px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 15px;
+        }
+
+        .clear-btn {
+            background: #f0f0f0;
+            color: #666;
+            padding: 8px 18px;
+            font-size: 13px;
+            font-weight: normal;
+        }
+
+        .clear-btn:hover {
+            background: #e0e0e0;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .message {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: #f0f0f0;
+            color: #666;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        @media (max-width: 500px) {
+            .container {
+                padding: 25px;
+            }
+            .form-group {
+                flex-direction: column;
+            }
+            .task-number {
+                min-width: 38px;
+                font-size: 14px;
+            }
+            .task-text {
+                font-size: 14px;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <h1>📝 Добавить заметку</h1>
+        <h1>📋 Список задач</h1>
+        <div class="subtitle">Добавляйте задачи — они появятся в формате "номер - задача"</div>
 
-        <form method="post" action="/">
-            <div class="form-group">
-                <input type="text" name="user_input" placeholder="Введите текст заметки..." required autofocus>
-                <button type="submit">Добавить</button>
-            </div>
+        <!-- Форма добавления новой задачи -->
+        <form id="taskForm" class="form-group">
+            <input type="text" id="taskInput" placeholder="Введите текст задачи..." required autofocus>
+            <button type="submit">➕ Добавить</button>
         </form>
 
+        <!-- Секция со списком задач -->
+        <div class="tasks-section">
+            <div class="tasks-header">
+                <span class="tasks-title">📌 Мои задачи</span>
+                <span class="task-count" id="taskCounter">0 задач</span>
+            </div>
+
+            <!-- Список задач будет отображаться здесь -->
+            <div id="taskListContainer">
+                <div class="empty-tasks">
+                    ✨ Пока нет задач<br>Добавьте первую задачу выше!
+                </div>
+            </div>
+
+            <!-- Кнопки управления -->
+            <div class="action-buttons">
+                <button id="clearAllBtn" class="clear-btn" style="background:#f8f9fa;">🗑️ Очистить все</button>
+            </div>
+        </div>
+
+        <!-- Сообщение для обратной связи -->
+        <div id="messageBox" class="message" style="display: none;"></div>
     </div>
+
+    <script>
+        // ============================================================
+        //  Класс для управления задачами (аналог бэкенда на фронтенде)
+        //  Задачи хранятся в localStorage, формат отображения: "1 - задача"
+        // ============================================================
+
+        class TaskManager {
+            constructor() {
+                // Массив задач: каждый объект { id, text, completed }
+                this.tasks = [];
+                this.loadFromStorage();
+                this.counterId = this.getMaxId() + 1;
+            }
+
+            getMaxId() {
+                if (this.tasks.length === 0) return 0;
+                return Math.max(...this.tasks.map(t => t.id));
+            }
+
+            loadFromStorage() {
+                const stored = localStorage.getItem('todo_tasks_app');
+                if (stored) {
+                    try {
+                        this.tasks = JSON.parse(stored);
+                        // Убедимся, что у каждой задачи есть поле completed (для обратной совместимости)
+                        this.tasks = this.tasks.map(t => ({ ...t, completed: t.completed || false }));
+                    } catch(e) {
+                        console.error('Ошибка загрузки', e);
+                        this.tasks = [];
+                    }
+                } else {
+                    // Начальные демо-задачи, чтобы показать пример "1 - задача 1", "2 - задача 2"
+                    this.tasks = [
+                        { id: 1, text: 'задача 1', completed: false },
+                        { id: 2, text: 'задача 2', completed: false },
+                        { id: 3, text: 'сделать страницу с задачами', completed: false },
+                        { id: 4, text: 'настроить стили', completed: false }
+                    ];
+                    this.saveToStorage();
+                }
+                this.counterId = this.getMaxId() + 1;
+            }
+
+            saveToStorage() {
+                localStorage.setItem('todo_tasks_app', JSON.stringify(this.tasks));
+            }
+
+            // Добавление новой задачи
+            addTask(text) {
+                if (!text || text.trim() === '') {
+                    return { success: false, message: 'Текст задачи не может быть пустым!' };
+                }
+                // Проверка на дубликат (опционально, но для удобства)
+                const trimmedText = text.trim();
+                const newTask = {
+                    id: this.counterId++,
+                    text: trimmedText,
+                    completed: false
+                };
+                this.tasks.push(newTask);
+                this.saveToStorage();
+                return { success: true, message: `Задача "${trimmedText}" добавлена!`, task: newTask };
+            }
+
+            // Удаление задачи по id
+            deleteTask(id) {
+                const index = this.tasks.findIndex(t => t.id === id);
+                if (index !== -1) {
+                    const deleted = this.tasks[index];
+                    this.tasks.splice(index, 1);
+                    this.saveToStorage();
+                    return { success: true, message: `Задача "${deleted.text}" удалена` };
+                }
+                return { success: false, message: 'Задача не найдена' };
+            }
+
+            // Переключение статуса выполнения
+            toggleComplete(id) {
+                const task = this.tasks.find(t => t.id === id);
+                if (task) {
+                    task.completed = !task.completed;
+                    this.saveToStorage();
+                    return true;
+                }
+                return false;
+            }
+
+            // Очистить все задачи
+            clearAll() {
+                if (this.tasks.length === 0) {
+                    return { success: false, message: 'Список и так пуст' };
+                }
+                this.tasks = [];
+                this.saveToStorage();
+                this.counterId = 1;
+                return { success: true, message: 'Все задачи удалены' };
+            }
+
+            // Получить все задачи
+            getAllTasks() {
+                return [...this.tasks];
+            }
+        }
+
+        // Инициализация менеджера задач
+        const taskManager = new TaskManager();
+
+        // DOM элементы
+        const taskForm = document.getElementById('taskForm');
+        const taskInput = document.getElementById('taskInput');
+        const taskListContainer = document.getElementById('taskListContainer');
+        const taskCounterSpan = document.getElementById('taskCounter');
+        const clearAllBtn = document.getElementById('clearAllBtn');
+        const messageBox = document.getElementById('messageBox');
+
+        // Функция отображения сообщения (автоскрытие)
+        function showMessage(text, type = 'success') {
+            messageBox.textContent = text;
+            messageBox.className = `message ${type}`;
+            messageBox.style.display = 'block';
+            setTimeout(() => {
+                messageBox.style.opacity = '0';
+                setTimeout(() => {
+                    messageBox.style.display = 'none';
+                    messageBox.style.opacity = '1';
+                }, 300);
+            }, 2500);
+        }
+
+        // Функция обновления интерфейса: отрисовка задач в формате "номер - задача"
+        function renderTasks() {
+            const tasks = taskManager.getAllTasks();
+            const totalTasks = tasks.length;
+            const completedTasksCount = tasks.filter(t => t.completed).length;
+
+            // Обновляем счетчик задач
+            if (totalTasks === 0) {
+                taskCounterSpan.textContent = '0 задач';
+            } else if (totalTasks === 1) {
+                taskCounterSpan.textContent = `1 задача (${completedTasksCount} выполнена)`;
+            } else if (totalTasks >= 2 && totalTasks <= 4) {
+                taskCounterSpan.textContent = `${totalTasks} задачи (${completedTasksCount} выполнено)`;
+            } else {
+                taskCounterSpan.textContent = `${totalTasks} задач (${completedTasksCount} выполнено)`;
+            }
+
+            // Если задач нет, показываем пустое состояние
+            if (totalTasks === 0) {
+                taskListContainer.innerHTML = `
+                    <div class="empty-tasks">
+                        📭 Список задач пуст<br>Добавьте первую задачу через форму выше!
+                    </div>
+                `;
+                return;
+            }
+
+            // Формируем список задач с нумерацией в формате "1 - текст"
+            // Важно: нумерация идет по порядку отображения (индекс+1), но мы сохраняем оригинальный id для операций
+            // Согласно ТЗ: Пример: 1 - задача 1, 2 - задача 2. Каждая задача отображается с номером и текстом.
+            let tasksHtml = `<ul class="task-list" style="list-style: none;">`;
+
+            tasks.forEach((task, idx) => {
+                // Номер в списке = порядковый номер (начинается с 1)
+                const displayNumber = idx + 1;
+                const completedClass = task.completed ? 'completed' : '';
+                const checkedAttr = task.completed ? 'checked' : '';
+
+                tasksHtml += `
+                    <li class="task-item ${completedClass}" data-task-id="${task.id}">
+                        <span class="task-number">${displayNumber} -</span>
+                        <span class="task-text">${escapeHtml(task.text)}</span>
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" class="task-checkbox" data-id="${task.id}" ${checkedAttr} title="Отметить выполнение">
+                            <button class="delete-btn" data-id="${task.id}" title="Удалить задачу">🗑️</button>
+                        </div>
+                    </li>
+                `;
+            });
+
+            tasksHtml += `</ul>`;
+            taskListContainer.innerHTML = tasksHtml;
+
+            // Добавляем обработчики событий для чекбоксов и кнопок удаления
+            attachEventListeners();
+        }
+
+        // Функция для экранирования HTML спецсимволов (безопасность)
+        function escapeHtml(str) {
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        // Привязка событий к динамическим элементам (чекбоксы, кнопки удаления)
+        function attachEventListeners() {
+            // Обработчики для чекбоксов (отметка выполнения)
+            const checkboxes = document.querySelectorAll('.task-checkbox');
+            checkboxes.forEach(checkbox => {
+                // Убираем старые обработчики, чтобы избежать дублирования (но при каждой перерисовке новые элементы)
+                checkbox.removeEventListener('change', handleCheckboxChange);
+                checkbox.addEventListener('change', handleCheckboxChange);
+            });
+
+            // Обработчики для кнопок удаления
+            const deleteButtons = document.querySelectorAll('.delete-btn');
+            deleteButtons.forEach(btn => {
+                btn.removeEventListener('click', handleDeleteClick);
+                btn.addEventListener('click', handleDeleteClick);
+            });
+        }
+
+        // Обработчик изменения статуса (чекбокс)
+        function handleCheckboxChange(event) {
+            const checkbox = event.target;
+            const taskId = parseInt(checkbox.getAttribute('data-id'), 10);
+            const isChecked = checkbox.checked;
+
+            // Меняем статус через менеджер задач
+            const success = taskManager.toggleComplete(taskId);
+            if (success) {
+                // Обновляем отображение
+                renderTasks();
+                // Показываем сообщение (опционально)
+                const task = taskManager.getAllTasks().find(t => t.id === taskId);
+                if (task) {
+                    const status = task.completed ? 'выполнена ✅' : 'возвращена в работу 🔄';
+                    showMessage(`Задача "${task.text.substring(0, 40)}" ${status}`, 'success');
+                } else {
+                    showMessage('Статус задачи обновлен', 'success');
+                }
+            } else {
+                showMessage('Ошибка при обновлении статуса', 'error');
+            }
+        }
+
+        // Обработчик удаления задачи
+        function handleDeleteClick(event) {
+            event.stopPropagation();
+            const button = event.currentTarget;
+            const taskId = parseInt(button.getAttribute('data-id'), 10);
+            const tasks = taskManager.getAllTasks();
+            const taskToDelete = tasks.find(t => t.id === taskId);
+
+            if (taskToDelete) {
+                const result = taskManager.deleteTask(taskId);
+                if (result.success) {
+                    renderTasks();
+                    showMessage(result.message, 'success');
+                } else {
+                    showMessage('Не удалось удалить задачу', 'error');
+                }
+            }
+        }
+
+        // Обработчик добавления новой задачи (через форму)
+        function handleAddTask(event) {
+            event.preventDefault();
+            const rawText = taskInput.value;
+            if (!rawText || rawText.trim() === '') {
+                showMessage('Пожалуйста, введите текст задачи!', 'error');
+                return;
+            }
+
+            const result = taskManager.addTask(rawText);
+            if (result.success) {
+                taskInput.value = '';
+                renderTasks();
+                showMessage(result.message, 'success');
+                taskInput.focus();
+            } else {
+                showMessage(result.message, 'error');
+            }
+        }
+
+        // Обработчик очистки всех задач
+        function handleClearAll() {
+            if (taskManager.getAllTasks().length === 0) {
+                showMessage('Список задач уже пуст', 'error');
+                return;
+            }
+
+            const confirmClear = confirm('Вы уверены, что хотите удалить ВСЕ задачи? Это действие нельзя отменить.');
+            if (confirmClear) {
+                const result = taskManager.clearAll();
+                if (result.success) {
+                    renderTasks();
+                    showMessage(result.message, 'success');
+                } else {
+                    showMessage(result.message, 'error');
+                }
+            }
+        }
+
+        // Инициализация приложения и установка обработчиков
+        function init() {
+            renderTasks();
+            taskForm.addEventListener('submit', handleAddTask);
+            clearAllBtn.addEventListener('click', handleClearAll);
+
+            // Автофокус на поле ввода
+            taskInput.focus();
+        }
+
+        // Запуск приложения после загрузки DOM
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
 </body>
 </html>
