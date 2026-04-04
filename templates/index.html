@@ -17,7 +17,30 @@
             <button type="submit">➕ Добавить</button>
         </form>
 
+        <!-- Секция со списком задач -->
+        <div class="tasks-section">
+            <div class="tasks-header">
+                <span class="tasks-title">📌 Мои задачи</span>
+                <span class="task-count" id="taskCounter">0 задач</span>
+            </div>
+
+            <!-- Список задач будет отображаться здесь -->
+            <div id="taskListContainer">
+                <div class="empty-tasks">
+                    ✨ Пока нет задач<br>Добавьте первую задачу выше!
+                </div>
+            </div>
+
+            <!-- Кнопки управления -->
+            <div class="action-buttons">
+                <button id="clearAllBtn" class="clear-btn" style="background:#f8f9fa;">🗑️ Очистить все</button>
+            </div>
+        </div>
+
+        <!-- Сообщение для обратной связи -->
+        <div id="messageBox" class="message" style="display: none;"></div>
     </div>
+
 
 </body>
 </html>
